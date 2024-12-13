@@ -136,9 +136,9 @@ if __name__ == "__main__":
             summary_30d = {"error": "Failed to fetch 30-day candlestick data"}
 
         # 3시간 5분 봉 데이터 처리
-        raw_5min_data = fetch_5min_data()  # 6시간 동안 5분 봉 (12 * 6 = 72)
+        raw_5min_data = fetch_5min_data()
         if raw_5min_data is not None:
-            print("최근 6시간 5분 봉 데이터:")
+            print("최근 3시간 5분 봉 데이터:")
             cleaned_5min = handle_missing_values(raw_5min_data)
             processed_5min = preprocess_5min_data(cleaned_5min)
             print("5분 봉 데이터 요약:")
