@@ -1,5 +1,5 @@
 # data_collection/fetch_quantitative.py
-
+import pandas as pd
 from pyupbit import get_ohlcv, get_current_price
 
 # 업비트 API를 활용한 데이터 수집 모듈
@@ -31,7 +31,7 @@ def fetch_24h_volume(market: str = "KRW-BTC") -> float:
         print(f"24시간 거래량 데이터를 가져오는 중 오류 발생: {e}")
         return None
 
-def fetch_30d_candlestick(market: str = "KRW-BTC", count: int = 30) -> "DataFrame":
+def fetch_30d_candlestick(market: str = "KRW-BTC", count: int = 30) -> pd.DataFrame:
     """
     주어진 암호화폐 시장의 최근 30일 일봉 데이터를 가져옵니다.
     :param market: str - 시장 식별자, 기본값은 KRW-BTC.
@@ -45,7 +45,7 @@ def fetch_30d_candlestick(market: str = "KRW-BTC", count: int = 30) -> "DataFram
         print(f"30일 일봉 데이터를 가져오는 중 오류 발생: {e}")
         return None
     
-def fetch_5min_data(market: str = "KRW-BTC", count: int = 36) -> "DataFrame":
+def fetch_5min_data(market: str = "KRW-BTC", count: int = 36) -> pd.DataFrame:
     """
     지정된 암호화폐 시장의 5분 봉 데이터를 가져옵니다.
     :param market: str - 시장 식별자, 기본값은 KRW-BTC.
