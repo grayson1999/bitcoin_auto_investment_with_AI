@@ -58,9 +58,13 @@ def send_request(request_data: Dict) -> Dict:
             model=request_data["model"],
             messages=request_data["messages"]
         )
-        return response.choices[0].message.content
+        # 응답 내용을 JSON 형식으로 반환
+        return json.loads(response.choices[0].message.content)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"응답 데이터를 JSON으로 변환하는 중 오류 발생: {e}")
     except Exception as e:
         raise ValueError(f"GPT 요청 처리 중 오류 발생: {e}")
+
 
 def validate_response(response: Dict) -> bool:
     """
