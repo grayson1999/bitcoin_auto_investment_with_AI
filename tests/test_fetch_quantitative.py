@@ -5,7 +5,9 @@ from unittest.mock import patch
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from data_collection.fetch_quantitative import fetch_current_price, fetch_24h_volume, fetch_30d_candlestick
+from data_collection.fetch_quantitative import (
+    fetch_current_price, fetch_24h_volume, fetch_30d_candlestick, fetch_5min_data
+)
 import pandas as pd
 
 class TestFetchQuantitative(unittest.TestCase):
@@ -54,6 +56,27 @@ class TestFetchQuantitative(unittest.TestCase):
         self.assertIsInstance(result, pd.DataFrame)
         self.assertEqual(len(result), 1)
         self.assertEqual(result.iloc[0]["trade_price"], 50000000.0)
+
+    @patch("data_collection.fetch_quantitative.get_ohlcv")
+    def test_fetch_5min_data(self, mock_get_ohlcv):
+        """
+        fetch_5min_data 함수 테스트.
+        모의된 5분 봉 데이터를 DataFrame 형태로 반환하는지 확인.
+        """
+        mock_df = pd.DataFrame({
+            "candle_date_time_utc": ["2024-12-01T00:05:00"],
+            "opening_price": [49000000.0],
+            "trade_price": [49500000.0],
+            "high_price": [50000000.0],
+            "low_price": [48000000.0],
+            "volume": [123.45]
+        })
+        mock_get_ohlcv.return_value = mock_df
+
+        result = fetch_5min_data()
+        self.assertIsInstance(result, pd.DataFrame)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result.iloc[0]["trade_price"], 49500000.0)
 
 if __name__ == "__main__":
     unittest.main()
