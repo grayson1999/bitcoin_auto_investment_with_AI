@@ -13,38 +13,39 @@ def prepare_request(data: Dict) -> Dict:
     :return: Dict - GPT API 요청 데이터.
     """
     try:
-        # Ensure the data is in proper JSON format for the GPT model
         formatted_data = json.dumps(data, indent=4, ensure_ascii=False)
         
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "You are a cryptocurrency trading expert. Based on the provided market data from a Korean exchange, "
-                    "your task is to analyze and determine the best trading action: 'buy,' 'sell,' or 'hold.' "
-                    "Provide a concise yet clear and friendly explanation for your decision, suitable for someone new to Bitcoin trading."
+                    "You are a cryptocurrency trading expert. Based on the provided market data and account status, "
+                    "analyze the current situation and recommend a trading action: 'buy,' 'sell,' or 'hold.' "
+                    "Additionally, suggest a specific amount of cash or Bitcoin to trade. Provide a concise explanation "
+                    "for your decision, considering the user's current position, cash, and invested value."
                 ),
             },
             {
                 "role": "user",
                 "content": (
-                    "The following is recent Bitcoin market data. Analyze the data and decide the best action. "
-                    "Use the given format for your response.\n\n"
+                    "The following is the recent Bitcoin market data and account status. "
+                    "Analyze and provide your recommendation.\n\n"
                     f"Data:\n{formatted_data}\n\n"
                     "Response Format:\n"
                     "{\n"
                     "    \"action\": \"buy/sell/hold\",\n"
+                    "    \"amount\": \"specific amount in KRW or BTC\",\n"
                     "    \"reason\": \"string (2-3 sentences, clear and friendly explanation)\"\n"
-                    "}"
+                    "}\n\n"
+                    "Always respond in the above JSON format without any additional text."
                 ),
             },
         ]
         
-        # Return the formatted request structure
         return {"model": "gpt-4o-mini", "messages": messages}
     
     except Exception as e:
-        raise ValueError(f"An error occurred while preparing the request data: {e}")
+        raise ValueError(f"요청 데이터 생성 중 오류 발생: {e}")
 
 
 def send_request(request_data: Dict) -> Dict:
@@ -94,71 +95,35 @@ if __name__ == "__main__":
 
     # 예시 데이터 생성
     example_data = {
-        "timestamp": "2024-12-14T04:38:45.942204+09:00",
-        "current_price": 144300000.0,
-        "volume_24h": 2236.49046605,
+    "timestamp": "2024-12-14T04:38:45.942204+09:00",
+    "current_price": 144300000.0,
+    "volume_24h": 2236.49046605,
+    "account_status": {
+        "cash": 500000,
+        "bitcoin": 0.0035,
+        "invested_value": 505000,
+        "current_position": "hold"
+    },
+    "market_data": {
         "summary_30d": {
             "segment_1": {
-                "date_range": "2024-11-14 09:00:00 to 2024-11-20 09:00:00",
                 "average_price": 127913285.71428572,
-                "high_price": 133180000.0,
-                "low_price": 123572000.0,
                 "volatility": 2981471.488727544
             },
-            "segment_2": {
-                "date_range": "2024-11-21 09:00:00 to 2024-11-27 09:00:00",
-                "average_price": 133942571.42857143,
-                "high_price": 137050000.0,
-                "low_price": 128783000.0,
-                "volatility": 3461599.8640870694
-            },
-            "segment_3": {
-                "date_range": "2024-11-28 09:00:00 to 2024-12-04 09:00:00",
-                "average_price": 134454000.0,
-                "high_price": 138760000.0,
-                "low_price": 133138000.0,
-                "volatility": 1944497.621495074
-            },
             "segment_4": {
-                "date_range": "2024-12-05 09:00:00 to 2024-12-11 09:00:00",
                 "average_price": 139569428.57142857,
-                "high_price": 143111000.0,
-                "low_price": 137501000.0,
                 "volatility": 1900233.569603384
             }
         },
         "processed_5min": {
             "hour_1": {
                 "average_price": 143833500.0,
-                "high_price": 144200000.0,
-                "low_price": 143351000.0,
-                "volatility": 165284.60303367642,
-                "volume_weighted_avg_price": 143888625.14067563,
-                "total_volume": 170.35494666
+                "volatility": 165284.60303367642
             },
-            "hour_2": {
-                "average_price": 144431000.0,
-                "high_price": 144650000.0,
-                "low_price": 143994000.0,
-                "volatility": 197725.24554864696,
-                "volume_weighted_avg_price": 144467062.00692615,
-                "total_volume": 183.13890112
-            },
-            "hour_3": {
-                "average_price": 144442000.0,
-                "high_price": 144790000.0,
-                "low_price": 144272000.0,
-                "volatility": 136250.43786418383,
-                "volume_weighted_avg_price": 144493279.5924718,
-                "total_volume": 77.02109742
-            },
-            "overall": {
-                "overall_trend": "upward",
-                "max_volatility": 331419.5011074118,
-                "outlier_detection": []
-            }
+            "overall_trend": "upward"
         }
     }
+}
 
     try:
         # GPT 요청 데이터 준비
