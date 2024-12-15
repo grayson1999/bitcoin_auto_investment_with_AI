@@ -108,6 +108,26 @@ def preprocess_5min_data(data: pd.DataFrame) -> dict:
     summary["overall"] = overall
     return summary
 
+def filter_bitcoin_portfolio(portfolio: dict, target_currency: str = "BTC") -> dict:
+    """
+    포트폴리오에서 특정 코인의 정보만 필터링합니다.
+    :param portfolio: dict - 전체 포트폴리오 상태.
+    :param target_currency: str - 대상 코인 (기본값은 'BTC').
+    :return: dict - 현금 잔고와 대상 코인 정보만 포함된 포트폴리오.
+    """
+    try:
+        filtered_portfolio = {"cash_balance": portfolio["cash_balance"], "target_asset": {"currency": target_currency, "balance": 0.0, "avg_buy_price": 0.0}}
+
+        for asset in portfolio["invested_assets"]:
+            if asset["currency"] == target_currency:
+                filtered_portfolio["target_asset"] = asset
+                break
+
+        return filtered_portfolio
+    except Exception as e:
+        print(f"포트폴리오 필터링 중 오류 발생: {e}")
+        return {"error": f"An error occurred while filtering the portfolio: {e}"}
+
 
 if __name__ == "__main__":
     try:
