@@ -1,50 +1,80 @@
 import logging
 from typing import Dict, Union
 
+import json
+from typing import Dict
+
 def format_input(data: Dict) -> str:
     """
-    `preprocess.py`에서 전달된 데이터를 GPT 입력 형식에 적합하도록 포맷팅합니다.
+    데이터를 GPT 입력 형식에 적합하도록 포맷팅합니다.
     :param data: Dict - 전처리된 데이터.
     :return: str - GPT 모델에 전달할 입력 데이터 텍스트.
     """
     try:
-        # 데이터를 JSON 형식으로 간소화하여 텍스트로 변환
+        # JSON 문자열일 경우 딕셔너리로 파싱
+        if isinstance(data, str):
+            data = json.loads(data)
+        
+        # Portfolio 정보 포맷팅
         formatted_data = (
-            f"Market Data:\n"
-            f"- Current Price: {data['current_price']} KRW\n"
-            f"- 24h Volume: {data['volume_24h']} BTC\n"
-            f"30-Day Summary:\n"
+            f"Portfolio:\n"
+            f"- Cash Balance: {data['portfolio']['cash_balance']} KRW\n"
         )
-        for segment, segment_data in data["summary_30d"].items():
+        if data["portfolio"].get("target_asset"):
+            asset = data["portfolio"]["target_asset"]
+            formatted_data += (
+                f"  Target Asset:\n"
+                f"    - Currency: {asset['currency']}\n"
+                f"    - Balance: {asset['balance']} BTC\n"
+                f"    - Avg Buy Price: {asset['avg_buy_price']} KRW\n"
+            )
+        else:
+            formatted_data += "  Target Asset: None\n"
+
+        # Market Data 정보 포맷팅
+        formatted_data += (
+            f"\nMarket Data:\n"
+            f"- Current Price: {data['market_data']['current_price']} KRW\n"
+            f"- 24h Volume: {data['market_data']['volume_24h']} BTC\n"
+            f"\n30-Day Summary:\n"
+        )
+        for segment, segment_data in data["market_data"]["summary_30d"].items():
             formatted_data += (
                 f"  {segment}:\n"
                 f"    - Date Range: {segment_data['date_range']}\n"
-                f"    - Average Price: {segment_data['average_price']} KRW\n"
-                f"    - High Price: {segment_data['high_price']} KRW\n"
-                f"    - Low Price: {segment_data['low_price']} KRW\n"
+                f"    - Avg Price: {segment_data['average_price']} KRW\n"
+                f"    - High: {segment_data['high_price']} KRW\n"
+                f"    - Low: {segment_data['low_price']} KRW\n"
                 f"    - Volatility: {segment_data['volatility']}\n"
             )
+
+        # 5분 봉 요약 포맷팅
         formatted_data += "\n5-Minute Summary:\n"
-        for hour, hour_data in data["processed_5min"].items():
+        for hour, hour_data in data["market_data"]["processed_5min"].items():
             if hour == "overall":
                 formatted_data += (
                     f"  Overall:\n"
-                    f"    - Trend: {hour_data['overall_trend']}\n"
+                    f"    - Trend: {hour_data['trend']}\n"
                     f"    - Max Volatility: {hour_data['max_volatility']}\n"
+                    f"    - Outlier Count: {hour_data['outlier_count']}\n"
                 )
-                continue
-            formatted_data += (
-                f"  {hour}:\n"
-                f"    - Average Price: {hour_data['average_price']} KRW\n"
-                f"    - High Price: {hour_data['high_price']} KRW\n"
-                f"    - Low Price: {hour_data['low_price']} KRW\n"
-                f"    - Volatility: {hour_data['volatility']}\n"
-                f"    - VWAP: {hour_data['volume_weighted_avg_price']} KRW\n"
-                f"    - Total Volume: {hour_data['total_volume']} BTC\n"
-            )
-        return formatted_data
+            else:
+                formatted_data += (
+                    f"  {hour}:\n"
+                    f"    - Avg Price: {hour_data['avg_price']} KRW\n"
+                    f"    - High: {hour_data['high_price']} KRW\n"
+                    f"    - Low: {hour_data['low_price']} KRW\n"
+                    f"    - Volatility: {hour_data['volatility']}\n"
+                    f"    - VWAP: {hour_data['vwap']} KRW\n"
+                    f"    - Total Volume: {hour_data['total_vol']} BTC\n"
+                )
+
+        return formatted_data.strip()
     except Exception as e:
         raise ValueError(f"입력 데이터 포맷팅 중 오류 발생: {e}")
+
+
+
 
 
 def parse_response(response: str) -> Dict:

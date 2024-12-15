@@ -52,17 +52,19 @@ def fetch_30d_candlestick(market: str = "KRW-BTC", count: int = 30) -> pd.DataFr
     
 def fetch_5min_data(market: str = "KRW-BTC", count: int = 36) -> pd.DataFrame:
     """
-    지정된 암호화폐 시장의 5분 봉 데이터를 가져옵니다.
+    지정된 암호화폐 시장의 5분 봉 데이터를 가져옵니다 (3시간).
     :param market: str - 시장 식별자, 기본값은 KRW-BTC.
     :param count: int - 가져올 봉 데이터의 개수, 기본값은 36개 (3시간).
     :return: DataFrame - 5분 봉 데이터 또는 None.
     """
     try:
+        # 업비트 API 호출로 5분 봉 데이터 가져오기
         data = get_ohlcv(market, interval="minute5", count=count)
         return data
     except Exception as e:
         print(f"5분 봉 데이터를 가져오는 중 오류 발생: {e}")
         return None
+
 
 def fetch_portfolio_status(access_key: str, secret_key: str) -> dict:
     """

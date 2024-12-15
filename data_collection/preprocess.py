@@ -32,11 +32,11 @@ def normalize_data(data: pd.DataFrame, columns_to_keep: list = None) -> pd.DataF
     return data[columns_to_keep]
 
 # 데이터 요약 추출 함수
-def extract_relevant_data(data: pd.DataFrame, interval: int = 7) -> dict:
+def extract_relevant_data(data: pd.DataFrame, interval: int = 10) -> dict:
     """
     데이터를 구간별로 나눠 각 구간의 평균, 최고값, 최저값, 변동성을 계산하고 날짜 범위를 포함합니다.
     :param data: DataFrame - 정규화된 데이터.
-    :param interval: int - 데이터를 나눌 구간(일수), 기본값은 7일.
+    :param interval: int - 데이터를 나눌 구간(일수), 기본값은 10일.
     :return: dict - 구간별로 계산된 핵심 정보와 날짜 범위.
     """
     summary = {}
@@ -70,43 +70,47 @@ def convert_to_json(data: dict) -> str:
     """
     return json.dumps(data, indent=4, ensure_ascii=False)
 
-# 5분 봉 데이터 전처리 함수
 def preprocess_5min_data(data: pd.DataFrame) -> dict:
     """
-    5분 봉 데이터를 전처리하여 구간별 통계 및 변동성을 계산하고 이상치 감지와 가중 평균을 적용합니다.
+    5분 봉 데이터를 전처리하여 구간별 통계 및 변동성을 계산합니다.
     :param data: DataFrame - 5분 봉 데이터.
-    :return: dict - 전처리된 데이터 요약 및 통계 정보.
+    :return: dict - 전처리된 데이터 요약 정보.
     """
     if data is None or data.empty:
-        return {"error": "No data available for preprocessing"}
-    
-    # DatetimeIndex를 정수형 인덱스로 변환하여 시간 구간 계산
+        return {"error": "No data available"}
+
+    # 시간 구간 계산
     data = data.copy()
-    data["time_index"] = (data.index - data.index[0]).total_seconds() // (60 * 60)  # 1시간 단위
+    data["time_index"] = (data.index - data.index[0]).total_seconds() // 3600  # 1시간 단위
 
-    summary = {}
-    grouped = data.groupby("time_index")
-
-    for time_idx, group in grouped:
-        summary[f"hour_{int(time_idx) + 1}"] = {
-            "average_price": group["close"].mean(),
-            "high_price": group["high"].max(),
-            "low_price": group["low"].min(),
-            "volatility": group["close"].std(),
-            "volume_weighted_avg_price": (group["close"] * group["volume"]).sum() / group["volume"].sum(),
-            "total_volume": group["volume"].sum()
+    # 시간별 통계 계산
+    summary = {
+        f"hour_{int(idx) + 1}": {
+            "avg_price": grp["close"].mean(),
+            "high_price": grp["high"].max(),
+            "low_price": grp["low"].min(),
+            "volatility": grp["close"].std(),
+            "vwap": (grp["close"] * grp["volume"]).sum() / grp["volume"].sum(),
+            "total_vol": grp["volume"].sum(),
         }
-    
-    # 추가적인 전반적 분석
-    overall = {
-        "overall_trend": "upward" if data["close"].iloc[-1] > data["close"].iloc[0] else "downward",
-        "max_volatility": data["close"].std(),
-        "outlier_detection": data[(data["close"] > data["close"].mean() + 2 * data["close"].std()) |
-                                  (data["close"] < data["close"].mean() - 2 * data["close"].std())].to_dict(orient="records")
+        for idx, grp in data.groupby("time_index")
     }
-    
-    summary["overall"] = overall
+
+    # 전체 분석 최적화
+    summary["overall"] = {
+        "trend": "up" if data["close"].iloc[-1] > data["close"].iloc[0] else "down",
+        "max_volatility": round(data["close"].std(), 2),
+        "outlier_count": len(
+            data[
+                (data["close"] > data["close"].mean() + 2 * data["close"].std()) |
+                (data["close"] < data["close"].mean() - 2 * data["close"].std())
+            ]
+        ),  # 이상치 수만 포함
+    }
+
     return summary
+
+
 
 def filter_bitcoin_portfolio(portfolio: dict, target_currency: str = "BTC") -> dict:
     """
