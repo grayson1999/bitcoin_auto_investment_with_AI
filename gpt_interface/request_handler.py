@@ -16,49 +16,53 @@ def prepare_request(data: Dict) -> Dict:
         formatted_data = json.dumps(data, indent=4, ensure_ascii=False)
         
         messages = [
-    {
-        "role": "system",
-        "content": (
-            "You are a cryptocurrency trading expert. Based on the provided market data and account status, "
-            "analyze the current situation and recommend a trading action: 'buy,' 'sell,' or 'hold.' "
-            "Additionally, suggest a specific amount of cash or Bitcoin to trade. Provide a concise explanation "
-            "for your decision, considering the user's current position, cash, invested value, and trading preferences.\n\n"
-            "Important Notes:\n"
-            "- The user has a slightly aggressive investment preference.\n"
-            "- As per Upbit's policy, purchases below 5000 KRW are not allowed.\n"
-            "- A 0.05% trading fee is applied per transaction.\n"
-            "- Transactions must account for fees, so only the amount excluding fees can be used for trades."
-        ),
-    },
-    {
-        "role": "user",
-        "content": (
-            "The following is the recent Bitcoin market data and account status. "
-            "Analyze and provide your recommendation based on the constraints and preferences.\n\n"
-            f"Data:\n{formatted_data}\n\n"
-            "Response Format (choose one):\n"
-            "For 'buy':\n"
-            "{\n"
-            "    \"action\": \"buy\",\n"
-            "    \"amount\": \"specific amount in KRW\",\n"
-            "    \"reason\": \"The current market conditions suggest buying is favorable. The provided amount fits your investment strategy while adhering to trading constraints.\"\n"
-            "}\n\n"
-            "For 'sell':\n"
-            "{\n"
-            "    \"action\": \"sell\",\n"
-            "    \"amount\": \"specific amount in BTC\",\n"
-            "    \"reason\": \"Selling is recommended based on the market conditions and your current asset balance. The provided amount aligns with your investment preferences.\"\n"
-            "}\n\n"
-            "For 'hold':\n"
-            "{\n"
-            "    \"action\": \"hold\",\n"
-            "    \"amount\": \"0\",\n"
-            "    \"reason\": \"Holding is advised as the current market conditions do not strongly favor buying or selling.\"\n"
-            "}\n\n"
-            "Always respond in one of the above JSON formats without any additional text."
-        ),
-    },
-]
+            {
+                "role": "system",
+                "content": (
+                    "You are a cryptocurrency trading expert. Based on the provided market data and account status, "
+                    "analyze the current situation and recommend a trading action: 'buy,' 'sell,' or 'hold.' "
+                    "Additionally, suggest a specific amount of cash or Bitcoin to trade. Provide a concise explanation "
+                    "for your decision, considering the user's current position, cash, invested value, and trading preferences.\n\n"
+                    "Important Notes:\n"
+                    "- The user has a slightly aggressive investment preference.\n"
+                    "- As per Upbit's policy, purchases below 5000 KRW are not allowed. If the user's cash balance is less than 5000 KRW, explicitly state that buying is not possible.\n"
+                    "- A 0.05% trading fee is applied per transaction.\n"
+                    "- Transactions must account for fees, so only the amount excluding fees can be used for trades.\n"
+                    "- Recommendations should prioritize maximizing profit or minimizing loss, even with constraints like low cash balances.\n"
+                    "- Reasons should be concise, friendly, and limited to a single line."
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    "The following is the recent Bitcoin market data and account status. "
+                    "Analyze and provide your recommendation based on the constraints and preferences.\n\n"
+                    f"Data:\n{formatted_data}\n\n"
+                    "Response Format (choose one):\n"
+                    "For 'buy':\n"
+                    "{\n"
+                    "    \"action\": \"buy\",\n"
+                    "    \"amount\": \"specific amount in KRW\",\n"
+                    "    \"reason\": \"The market looks favorable for buying, and the amount fits your strategy.\"\n"
+                    "}\n\n"
+                    "For 'sell':\n"
+                    "{\n"
+                    "    \"action\": \"sell\",\n"
+                    "    \"amount\": \"specific amount in BTC\",\n"
+                    "    \"reason\": \"Selling aligns with the market trend and your current asset status.\"\n"
+                    "}\n\n"
+                    "For 'hold':\n"
+                    "{\n"
+                    "    \"action\": \"hold\",\n"
+                    "    \"amount\": \"0\",\n"
+                    "    \"reason\": \"Holding is the best option given the current market and constraints.\"\n"
+                    "}\n\n"
+                    "- Note: If the user's cash balance is less than 5000 KRW, you must not recommend buying. Instead, evaluate 'sell' or 'hold' based on market conditions and the user's portfolio.\n"
+                    "Always respond in one of the above JSON formats without any additional text."
+                ),
+            },
+        ]
+
         
         return {"model": "gpt-4o-mini", "messages": messages}
     
