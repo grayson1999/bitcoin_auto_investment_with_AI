@@ -93,7 +93,11 @@ def fetch_portfolio_status(access_key: str, secret_key: str) -> dict:
 
         # 응답 데이터를 파싱하여 포트폴리오 상태 구성
         assets = response.json()
-        portfolio = {"cash_balance": 0.0, "invested_assets": []}
+        portfolio = {
+            "cash_balance": 0.0,
+            "invested_assets": [],
+            "total_investment": 0.0  # 누적 투자 금액
+        }
 
         for asset in assets:
             if asset["currency"] == "KRW":
@@ -101,13 +105,22 @@ def fetch_portfolio_status(access_key: str, secret_key: str) -> dict:
                 portfolio["cash_balance"] = float(asset["balance"])
             else:
                 # 투자 자산
+                balance = float(asset["balance"])
+                avg_buy_price = float(asset.get("avg_buy_price", 0))
+                total_asset_investment = balance * avg_buy_price  # 해당 자산의 투자 금액
+
                 invested_asset = {
                     "currency": asset["currency"],
-                    "balance": float(asset["balance"]),
-                    "avg_buy_price": float(asset["avg_buy_price"]),
+                    "balance": balance,
+                    "avg_buy_price": avg_buy_price,
+                    "total_investment": round(total_asset_investment, 2)  # 개별 자산 누적 투자 금액
                 }
                 portfolio["invested_assets"].append(invested_asset)
 
+                # 총 누적 투자 금액 업데이트
+                portfolio["total_investment"] += total_asset_investment
+
+        portfolio["total_investment"] = round(portfolio["total_investment"], 2)  # 소수점 처리
         return portfolio
 
     except Exception as e:
