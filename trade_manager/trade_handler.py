@@ -11,7 +11,6 @@ dotenv_path = os.path.join(BASE_DIR, ".env")
 load_dotenv()
 
 # .env 파일에서 API 키 로드
-load_dotenv()
 UPBIT_ACCESS_KEY = os.getenv("UPBIT_API_KEY")
 UBPIT_SECRET_KEY = os.getenv("UPBIT_API_SECRET")
 
