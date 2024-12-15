@@ -35,23 +35,34 @@ class SlackNotifier:
             print(f"Slack 연결 상태 확인 중 오류 발생: {e}")
             return False
 
-    def format_message(self, data: dict) -> str:
+    def format_slack_message(self, data: dict) -> str:
         """
-        데이터를 기반으로 Slack 메시지 포맷 설정.
+        데이터를 기반으로 Slack 메시지를 포맷팅.
         :param data: dict - 알림 데이터.
         :return: str - 포맷된 메시지.
         """
         try:
             message = (
-                f"🔔 **알림**\n"
-                f"이벤트: {data.get('event', '정보 없음')}\n"
-                f"내용: {data.get('message', '내용 없음')}\n"
-                f"시간: {data.get('timestamp', '시간 없음')}"
-            )
+            f"🔔 **[비트코인 투자 알림]**\n"
+            f"📋 **실행 내용**\n"
+            f"➡️ **이번 행위**: {data.get('executed_action', 'N/A')}\n"
+            f"💡 **행위 이유**: {data.get('executed_reason', '정보 없음')}\n\n"
+            f"📊 **수익률**: {data.get('profit_rate', 'N/A')}%\n"
+            f"💵 **수익 금액**: {data.get('profit_amount', 'N/A')}\n"  # 수익 금액 추가
+            f"💰 **투자 현황**: {data.get('balance', 'N/A')} BTC\n"
+            f"💵 **원화 잔고**: {data.get('cash_balance', 'N/A')}\n"
+            f"🪙 **투자 금액**: {data.get('investment', 'N/A')}\n\n"
+            f"📋 **거래 내용**\n"
+            f"📅 **마지막 거래 시간**: {data.get('last_trade_time', 'N/A')}\n"
+            f"🔄 **거래 액션**: {data.get('last_action', 'N/A')} ({data.get('last_trade_amount', 'N/A')})\n"
+            f"💡 **거래 이유**: {data.get('last_trade_reason', '정보 없음')}\n"
+        )
             return message
         except Exception as e:
             print(f"Slack 메시지 포맷팅 중 오류 발생: {e}")
             return "메시지 포맷팅 오류 발생"
+
+
 
     def send_message(self, channel: str, text: str) -> bool:
         """
