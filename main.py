@@ -15,6 +15,7 @@ from db.database import SessionLocal, init_db
 from db.crud import *
 from notifications.slack_notifier import SlackNotifier
 from deep_translator import GoogleTranslator
+from datetime import datetime
 
 # 환경 초기화
 def initialize_env():
@@ -121,6 +122,17 @@ def send_slack_notification(db, gpt_result, response_content, calc_result, portf
     # 최근 거래 로그 가져오기
     last_trade_log = get_last_trade_log(db)
 
+    # 사람이 읽기 쉬운 시간 포맷 변환 함수
+    def format_timestamp(timestamp):
+        try:
+            # ISO 형식의 timestamp를 datetime 객체로 변환
+            dt_object = datetime.fromisoformat(timestamp)
+            # 원하는 포맷으로 변환 (예: "YYYY-MM-DD HH:MM:SS")
+            return dt_object.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            # timestamp 형식이 잘못되었거나 변환에 실패하면 기본값 반환
+            return "N/A"
+
     # Slack 데이터 생성
     slack_data = {
         "executed_action": gpt_result[0] if gpt_result and gpt_result[0] != "hold" else "hold",
@@ -132,7 +144,7 @@ def send_slack_notification(db, gpt_result, response_content, calc_result, portf
         "investment": f"{portfolio_data.get('target_asset', {}).get('total_investment', 0.0):,.2f} KRW",
         "cumulative_profit_amount": f"{cumulative_summary.get('cumulative_profit_loss', 0.0):,.2f} KRW",
         "cumulative_profit_rate": f"{cumulative_summary.get('cumulative_profit_rate', 0.0):.2f}%",
-        "last_trade_time": last_trade_log.timestamp.isoformat() if last_trade_log else "N/A",
+        "last_trade_time": format_timestamp(last_trade_log.timestamp.isoformat()) if last_trade_log else "N/A",
         "last_action": last_trade_log.action if last_trade_log else "N/A",
         "last_trade_amount": (
             f"{last_trade_log.amount:.8f} BTC"  # BTC 형식
