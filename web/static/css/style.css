@@ -1,0 +1,189 @@
+/* Body 스타일 */
+body {
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    color: #333333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* 카드 스타일 */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 표 스타일 */
+.table {
+    font-size: 0.95rem;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    word-wrap: break-word; /* 긴 텍스트 자동 줄 바꿈 */
+    overflow-wrap: break-word;
+    width: 100%; /* 표가 컨테이너 너비를 채움 */
+}
+
+.table tbody tr {
+    background: #ffffff;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.table th {
+    color: #4CAF50;
+    font-weight: 700;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left; /* 열 제목 정렬 */
+}
+
+.table td {
+    padding: 12px 15px;
+    border: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: normal; /* 기본적으로 텍스트를 줄바꿈 */
+}
+
+/* 긴 거래 이유 텍스트 */
+.table td.long-text {
+    white-space: normal; /* 긴 텍스트는 줄바꿈 */
+    word-break: break-word;
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+    background-color: #5A67D8;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 25px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(90, 103, 216, 0.4);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #4C51BF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(76, 81, 191, 0.5);
+}
+
+/* Chart.js 스타일 */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #ffffff, #f4f4f4);
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+    body {
+        font-size: 0.9rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    p, .btn, .table td {
+        font-size: 0.85rem;
+    }
+
+    .card {
+        margin-bottom: 20px;
+    }
+
+    canvas {
+        height: 300px;
+    }
+
+    /* 표를 스크롤 가능하도록 */
+    .table {
+        font-size: 0.85rem;
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 0.8rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+
+    p, .btn, .table td {
+        font-size: 0.8rem;
+    }
+
+    canvas {
+        height: 250px;
+    }
+
+    .btn-primary {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+
+    /* 표를 카드 형태로 변경 */
+    .table {
+        display: block;
+    }
+
+    .table tbody tr {
+        display: block;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .table td {
+        display: block;
+        text-align: left;
+        padding: 5px 0;
+        white-space: normal;
+    }
+
+    .table th {
+        display: none; /* 열 제목 숨김 */
+    }
+}
+
+/* 글로벌 색상과 간격 */
+:root {
+    --primary-color: #5A67D8;
+    --secondary-color: #4CAF50;
+    --background-gradient: linear-gradient(to right, #e3f2fd, #ffffff);
+    --spacing: 20px;
+    --border-radius: 15px;
+}

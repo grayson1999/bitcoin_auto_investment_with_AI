@@ -21,3 +21,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def init_db():
     from . import models  # models를 여기서 import
     Base.metadata.create_all(bind=engine)
+
+# 의존성 주입
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

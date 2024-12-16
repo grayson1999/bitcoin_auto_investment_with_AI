@@ -149,3 +149,11 @@ def calculate_cumulative_profit_and_rate(db: Session):
         "cumulative_profit_loss": round(cumulative_profit_loss, 2),
         "cumulative_profit_rate": round(cumulative_profit_rate, 2),
     }
+    
+# 투자 요약 정보 가져오기
+def get_investment_summary(db: Session):
+    return db.query(InvestmentSummary).first()
+
+# 최근 거래 내역 가져오기
+def get_recent_trades(db: Session, limit: int = 5):
+    return db.query(TradeLogs).order_by(TradeLogs.timestamp.desc()).limit(limit).all()
