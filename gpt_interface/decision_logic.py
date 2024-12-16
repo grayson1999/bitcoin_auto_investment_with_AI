@@ -2,8 +2,6 @@ import logging
 from typing import Dict
 
 # 판단 로직 모듈
-
-
 from typing import Dict, Tuple, Optional  # Tuple과 Optional을 포함하여 typing 임포트
 
 def make_decision(gpt_response: Dict, portfolio: Dict) -> Tuple[str, Optional[float]]:
@@ -94,47 +92,3 @@ def make_decision(gpt_response: Dict, portfolio: Dict) -> Tuple[str, Optional[fl
         logging.error(f"Error in make_decision: {e}")
         return "hold", 0  # 오류 발생 시 기본값 반환
 
-
-if __name__ == "__main__":
-    # 로깅 설정
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-    # 예시 데이터: GPT 응답 데이터
-    gpt_response = {
-        "action": "buy",
-        "amount": "0.0035",
-        "reason": (
-            "The current price shows an upward trend and is above the recent average, "
-            "providing a good opportunity to increase your Bitcoin holdings. "
-            "With sufficient cash available, it is advisable to reinvest the full amount "
-            "of your Bitcoin to capitalize on potential future gains."
-        ),
-    }
-
-    # 예시 데이터: 현재 포트폴리오 상태
-    portfolio = {
-        "cash_balance": 1000000.0,  # 100만 원
-        "invested_assets": [
-            {"currency": "BTC", "balance": 0.005, "avg_buy_price": 45000000.0}  # 0.005 BTC 보유
-        ],
-    }
-
-    # 1. GPT 응답 데이터를 토대로 행동 결정
-    action = make_decision(gpt_response, portfolio)
-    logging.info(f"결정된 행동: {action}")
-
-    # 2. 이전 판단 결과 평가
-    previous_decisions = [
-        {"action": "buy", "profit": 10000.0},
-        {"action": "sell", "profit": -5000.0},
-        {"action": "hold", "profit": 0.0},
-    ]
-    evaluate_decision(previous_decisions, market_data={"current_price": 46000000.0})
-
-    # 3. 수익률 계산
-    previous_transactions = [
-        {"initial_value": 1000000.0, "final_value": 1050000.0},  # 수익 5%
-        {"initial_value": 500000.0, "final_value": 450000.0},    # 손실 10%
-    ]
-    total_performance = calculate_performance(previous_transactions)
-    logging.info(f"총 수익률: {total_performance:.2f}%")
