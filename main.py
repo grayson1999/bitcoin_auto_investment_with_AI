@@ -105,7 +105,7 @@ try:
         "timestamp": current_datetime,
         "input_data": formatted_input,
         "action": response_content.get("action"),
-        "amount": float(response_content.get("amount").replace(" KRW", "")) if response_content.get("amount") else None,
+        "amount": float(response_content.get("amount").replace(" KRW", "").replace(" BTC", "")) if response_content.get("amount") else None,
         "reason": response_content.get("reason"),
     }
 

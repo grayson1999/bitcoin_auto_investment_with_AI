@@ -49,7 +49,7 @@ class SlackNotifier:
             f"💡 **행위 이유**: {data.get('executed_reason', '정보 없음')}\n\n"
             f"📊 **수익률**: {data.get('profit_rate', 'N/A')}%\n"
             f"💵 **수익 금액**: {data.get('profit_amount', 'N/A')}\n"  # 수익 금액 추가
-            f"💰 **투자 현황**: {data.get('balance', 'N/A')} BTC\n"
+            f"💰 **투자 현황**: {data.get('balance', 'N/A')}\n"
             f"💵 **원화 잔고**: {data.get('cash_balance', 'N/A')}\n"
             f"🪙 **투자 금액**: {data.get('investment', 'N/A')}\n\n"
             f"📋 **거래 내용**\n"
