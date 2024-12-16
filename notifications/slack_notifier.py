@@ -43,20 +43,26 @@ class SlackNotifier:
         """
         try:
             message = (
-            f"🔔 **[비트코인 투자 알림]**\n"
-            f"📋 **실행 내용**\n"
-            f"➡️ **이번 행위**: {data.get('executed_action', 'N/A')}\n"
-            f"💡 **행위 이유**: {data.get('executed_reason', '정보 없음')}\n\n"
-            f"📊 **수익률**: {data.get('profit_rate', 'N/A')}%\n"
-            f"💵 **수익 금액**: {data.get('profit_amount', 'N/A')}\n"  # 수익 금액 추가
-            f"💰 **투자 현황**: {data.get('balance', 'N/A')}\n"
-            f"💵 **원화 잔고**: {data.get('cash_balance', 'N/A')}\n"
-            f"🪙 **투자 금액**: {data.get('investment', 'N/A')}\n\n"
-            f"📋 **거래 내용**\n"
-            f"📅 **마지막 거래 시간**: {data.get('last_trade_time', 'N/A')}\n"
-            f"🔄 **거래 액션**: {data.get('last_action', 'N/A')} ({data.get('last_trade_amount', 'N/A')})\n"
-            f"💡 **거래 이유**: {data.get('last_trade_reason', '정보 없음')}\n"
-        )
+                f"🔔 **[비트코인 투자 알림]**\n\n"
+                f"📋 **실행 요약**\n"
+                f"➡️ **이번 행위**: {data.get('executed_action', 'N/A')}\n"
+                f"💡 **행위 이유**: {data.get('executed_reason', '정보 없음')}\n\n"
+                f"📊 **수익 요약**\n"
+                f"💵 **이번 수익 금액**: {data.get('profit_amount', 'N/A')}\n"
+                f"📈 **이번 수익률**: {data.get('profit_rate', 'N/A')}%\n"
+                f"💰 **누적 수익 금액**: {data.get('cumulative_profit_amount', 'N/A')}\n"
+                f"📉 **누적 수익률**: {data.get('cumulative_profit_rate', 'N/A')}%\n\n"
+                f"💼 **포트폴리오 현황**\n"
+                f"🪙 **보유 자산 (BTC)**: {data.get('balance', 'N/A')}\n"
+                f"💵 **원화 잔고**: {data.get('cash_balance', 'N/A')}\n"
+                f"💳 **총 투자 금액**: {data.get('investment', 'N/A')}\n\n"
+                f"📋 **거래 내역**\n"
+                f"📅 **마지막 거래 시간**: {data.get('last_trade_time', 'N/A')}\n"
+                f"🔄 **거래 액션**: {data.get('last_action', 'N/A')} "
+                f"({data.get('last_trade_amount', 'N/A')})\n"
+                f"💡 **거래 이유**: {data.get('last_trade_reason', '정보 없음')}\n"
+            )
+
             return message
         except Exception as e:
             print(f"Slack 메시지 포맷팅 중 오류 발생: {e}")

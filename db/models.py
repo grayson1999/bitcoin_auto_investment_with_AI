@@ -12,6 +12,9 @@ class InvestmentSummary(Base):
     total_profit_loss = Column(Float, nullable=False, default=0.0)
     profit_rate = Column(Float, nullable=False, default=0.0)
     total_trades = Column(Integer, nullable=False, default=0)
+    cumulative_profit_loss = Column(Float, nullable=False, default=0.0)  # 누적 수익 금액
+    cumulative_profit_rate = Column(Float, nullable=False, default=0.0)  # 누적 수익률
+
 
 # 거래 내역 테이블
 class TradeLogs(Base):

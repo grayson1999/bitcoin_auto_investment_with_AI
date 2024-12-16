@@ -9,20 +9,21 @@ def calculate_profit_loss(portfolio: dict, current_price: float) -> dict:
     """
     try:
         # 포트폴리오에서 대상 자산 데이터 추출
-        target_asset = portfolio.get("target_asset")
+        target_asset = portfolio.get("target_asset", {})
         if not target_asset:
             raise ValueError("No target asset found in portfolio")
 
-        avg_buy_price = target_asset.get("avg_buy_price", 0)
-        balance = target_asset.get("balance", 0)
-        total_investment = target_asset.get("total_investment", 0)  # 누적 투자 금액
-        
-        # 초기 투자 금액과 현재 평가 금액 계산
+        # 데이터 추출 및 기본값 설정
+        avg_buy_price = target_asset.get("avg_buy_price", 0.0)
+        balance = target_asset.get("balance", 0.0)
+        total_investment = target_asset.get("total_investment", 0.0)
+
+        # 현재 평가 금액 계산
         current_valuation = current_price * balance
 
         # 수익률 계산
         profit_loss = current_valuation - total_investment
-        profit_rate = (profit_loss / total_investment * 100) if total_investment > 0 else 0
+        profit_rate = (profit_loss / total_investment * 100) if total_investment > 0 else 0.0
 
         # 결과 반환
         return {
@@ -32,6 +33,9 @@ def calculate_profit_loss(portfolio: dict, current_price: float) -> dict:
             "profit_rate": round(profit_rate, 2),
         }
 
+    except ZeroDivisionError:
+        logging.error("Division by zero in profit/loss calculation")
+        return {"error": "Division by zero in calculation"}
     except Exception as e:
         logging.error(f"Error calculating profit/loss: {e}")
         return {"error": str(e)}
