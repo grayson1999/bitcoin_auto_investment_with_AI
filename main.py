@@ -1,7 +1,6 @@
 import schedule
 import time
 import os
-import datetime
 import pytz
 from dotenv import load_dotenv
 from data_collection.fetch_quantitative import *
@@ -26,7 +25,7 @@ def initialize_env():
 # 현재 시간 가져오기
 def get_current_time():
     seoul_tz = pytz.timezone("Asia/Seoul")
-    return datetime.datetime.now(seoul_tz).isoformat()
+    return datetime.now(seoul_tz).isoformat()
 
 # 데이터 수집
 def collect_market_data():
@@ -82,10 +81,15 @@ def handle_gpt_request(final_result):
         amount = response_content.get("amount")
         if amount:
             # 문자열에서 불필요한 단위 제거 및 숫자로 변환
-            if "KRW" in amount or "BTC" in amount:
-                amount = float(amount.replace(" KRW", "").replace(" BTC", "").strip())
+            if isinstance(amount, str):
+                if "KRW" in amount or "BTC" in amount:
+                    amount = float(amount.replace(" KRW", "").replace(" BTC", "").strip())
+                else:
+                    amount = float(amount.strip())  # 단위가 없는 경우
+            elif isinstance(amount, (float, int)):
+                amount = float(amount)  # 숫자인 경우 그대로 변환
             else:
-                amount = float(amount.strip())  # 단위가 없는 경우
+                raise ValueError("Invalid amount format")  # 예상치 못한 형식의 경우 예외 발생
             response_content["amount"] = amount  # 변환된 값으로 업데이트
         else:
             response_content["amount"] = None
@@ -94,7 +98,6 @@ def handle_gpt_request(final_result):
         response_content["amount"] = None
 
     return response_content
-
 
 # 매매 실행 및 로깅
 def execute_trade_and_log(action, amount, current_price, response_content):
@@ -189,8 +192,13 @@ def business_logic():
         response_content = handle_gpt_request(final_result)
 
         # 매매 결정
+        print("\n[Debug] GPT Response Content:", response_content)  # 디버깅용
         gpt_result = make_decision(response_content, portfolio_status)
+        print("\n[Debug] GPT Decision Result:", gpt_result)  # 디버깅용
+
+        # 수익률 계산
         calc_result = calculate_profit_loss(portfolio_status, market_data["current_price"])
+
 
         # 매매 실행
         if gpt_result[0] != "hold":
