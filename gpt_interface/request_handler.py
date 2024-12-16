@@ -19,49 +19,44 @@ def prepare_request(data: Dict) -> Dict:
             {
                 "role": "system",
                 "content": (
-                    "You are a cryptocurrency trading expert. Based on the provided market data and account status, "
-                    "analyze the current situation and recommend a trading action: 'buy,' 'sell,' or 'hold.' "
-                    "Additionally, suggest a specific amount of cash or Bitcoin to trade. Provide a concise explanation "
-                    "for your decision, considering the user's current position, cash, invested value, and trading preferences.\n\n"
-                    "Important Notes:\n"
-                    "- The user has a slightly aggressive investment preference.\n"
-                    "- As per Upbit's policy, purchases below 5000 KRW are not allowed. If the user's cash balance is less than 5000 KRW, explicitly state that buying is not possible.\n"
-                    "- A 0.05% trading fee is applied per transaction.\n"
-                    "- Transactions must account for fees, so only the amount excluding fees can be used for trades.\n"
-                    "- Recommendations should prioritize maximizing profit or minimizing loss, even with constraints like low cash balances.\n"
-                    "- Reasons should be concise, friendly, and limited to a single line."
+                    "You are a cryptocurrency trading expert. Based on market data and account status, recommend one of: 'buy,' 'sell,' or 'hold.' "
+                    "Specify the exact amount to trade and a concise reason for your decision, considering the user's preferences and constraints.\n\n"
+                    "Key Points:\n"
+                    "1. The user prefers a slightly aggressive strategy.\n"
+                    "2. Trades occur hourly and must optimize for short-term outcomes.\n"
+                    "3. Purchases below 5000 KRW are prohibited. Explicitly state when buying is not possible due to low cash balance.\n"
+                    "4. A 0.05% trading fee applies. Recommendations must account for fees.\n"
+                    "5. Maximize profit or minimize loss by analyzing:\n"
+                    "   - Market trends (rising, falling, stable)\n"
+                    "   - Portfolio status (cash balance, holdings, recent trades)\n"
+                    "6. Ensure trades stay within available balances and comply with Upbit policies.\n"
+                    "7. Provide reasons tailored to market conditions and user constraints.\n\n"
+                    "Output Format:\n"
+                    "{\n"
+                    "    \"action\": \"buy\" | \"sell\" | \"hold\",\n"
+                    "    \"amount\": \"specific amount in KRW or BTC\",\n"
+                    "    \"reason\": \"Brief explanation\"\n"
+                    "}\n"
+                    "If buying is not allowed, prioritize 'sell' or 'hold' based on the market and portfolio.\n"
+                    "Respond strictly in JSON format without extra text."
                 ),
             },
             {
                 "role": "user",
                 "content": (
                     "The following is the recent Bitcoin market data and account status. "
-                    "Analyze and provide your recommendation based on the constraints and preferences.\n\n"
+                    "Analyze and provide your recommendation.\n\n"
                     f"Data:\n{formatted_data}\n\n"
-                    "Response Format (choose one):\n"
-                    "For 'buy':\n"
+                    "Response Format:\n"
                     "{\n"
-                    "    \"action\": \"buy\",\n"
-                    "    \"amount\": \"specific amount in KRW\",\n"
-                    "    \"reason\": \"The market looks favorable for buying, and the amount fits your strategy.\"\n"
-                    "}\n\n"
-                    "For 'sell':\n"
-                    "{\n"
-                    "    \"action\": \"sell\",\n"
-                    "    \"amount\": \"specific amount in BTC\",\n"
-                    "    \"reason\": \"Selling aligns with the market trend and your current asset status.\"\n"
-                    "}\n\n"
-                    "For 'hold':\n"
-                    "{\n"
-                    "    \"action\": \"hold\",\n"
-                    "    \"amount\": \"0\",\n"
-                    "    \"reason\": \"Holding is the best option given the current market and constraints.\"\n"
-                    "}\n\n"
-                    "- Note: If the user's cash balance is less than 5000 KRW, you must not recommend buying. Instead, evaluate 'sell' or 'hold' based on market conditions and the user's portfolio.\n"
-                    "Always respond in one of the above JSON formats without any additional text."
+                    "    \"action\": \"buy\" | \"sell\" | \"hold\",\n"
+                    "    \"amount\": \"specific amount in KRW or BTC\",\n"
+                    "    \"reason\": \"Brief explanation\"\n"
+                    "}\n"
                 ),
             },
         ]
+
 
         
         return {"model": "gpt-4o-mini", "messages": messages}
