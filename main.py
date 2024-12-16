@@ -134,7 +134,13 @@ def send_slack_notification(db, gpt_result, response_content, calc_result, portf
         "cumulative_profit_rate": f"{cumulative_summary.get('cumulative_profit_rate', 0.0):.2f}%",
         "last_trade_time": last_trade_log.timestamp.isoformat() if last_trade_log else "N/A",
         "last_action": last_trade_log.action if last_trade_log else "N/A",
-        "last_trade_amount": f"{last_trade_log.amount:.8f} BTC" if last_trade_log else "0 BTC",
+        "last_trade_amount": (
+            f"{last_trade_log.amount:.8f} BTC"  # BTC 형식
+            if last_trade_log and last_trade_log.amount < 1  # BTC는 항상 1 미만
+            else f"{last_trade_log.amount:,.2f} KRW"  # KRW 형식
+            if last_trade_log and last_trade_log.amount >= 1  # KRW는 1 이상
+            else "0.00"  # 기본값
+        ),
         "last_trade_reason": last_trade_log.reason if last_trade_log else "정보 없음",
     }
 
