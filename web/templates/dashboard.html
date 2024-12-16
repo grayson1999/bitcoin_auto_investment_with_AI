@@ -42,7 +42,7 @@
                     {% for asset in data['portfolio'] %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ asset.currency }}
-                        <span>{{ asset.balance }} (평균 매수 가격: {{ asset.avg_buy_price }} KRW)</span>
+                        <span>{{ asset.balance }} (매수 가격: {{ asset.total_investment }} KRW | 현금 보유:{{ asset.cash_balance|round(2) }} KRW)</span>
                     </li>
                     {% endfor %}
                 </ul>
@@ -63,22 +63,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tbody>
-                            {% if data['recent_trades'] %}
-                                {% for trade in data['recent_trades'] %}
-                                <tr>
-                                    <td>{{ trade.timestamp }}</td>
-                                    <td>{{ trade.action }}</td>
-                                    <td>{{ trade.amount }}</td>
-                                    <td class="reason-cell">{{ trade.reason }}</td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="4" class="text-center">최근 거래 기록이 없습니다.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
+                    <tbody>
+                        {% if data['recent_trades'] %}
+                        {% for trade in data['recent_trades'] %}
+                        <tr>
+                            <td>{{ trade.timestamp }}</td>
+                            <td>{{ trade.action }}</td>
+                            <td>{{ trade.amount }}</td>
+                            <td class="reason-cell">{{ trade.reason }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">최근 거래 기록이 없습니다.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
                     </tbody>
                 </table>
             </div>
@@ -98,7 +98,7 @@
                 </div>
             </div>
         </section>
-        
+
 
         <section class="card mb-4">
             <div class="card-body">

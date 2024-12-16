@@ -61,6 +61,7 @@ def get_portfolio_status():
     portfolio_status = fetch_portfolio_status(UPBIT_ACCESS_KEY, UPBIT_SECRET_KEY)
     return filter_bitcoin_portfolio(portfolio_status)
 
+
 # GPT 요청 처리 및 응답
 def handle_gpt_request(final_result):
     json_result = convert_to_json(final_result)
@@ -90,14 +91,15 @@ def handle_gpt_request(final_result):
                 amount = float(amount)  # 숫자인 경우 그대로 변환
             else:
                 raise ValueError("Invalid amount format")  # 예상치 못한 형식의 경우 예외 발생
-            response_content["amount"] = amount  # 변환된 값으로 업데이트
         else:
-            response_content["amount"] = None
+            amount = 0.0  # 기본값 설정
+        response_content["amount"] = amount  # 변환된 값으로 업데이트
     except ValueError as ve:
         print(f"Invalid amount format in GPT response: {response_content.get('amount')}")
-        response_content["amount"] = None
+        response_content["amount"] = 0.0
 
     return response_content
+
 
 # 매매 실행 및 로깅
 def execute_trade_and_log(action, amount, current_price, response_content):
@@ -170,7 +172,6 @@ def send_slack_notification(db, gpt_result, response_content, calc_result, portf
         notifier.send_message("#autobitcoin", formatted_message)
 
 
-# 비즈니스 로직
 def business_logic():
     db = SessionLocal()
     try:
@@ -191,25 +192,43 @@ def business_logic():
         # GPT 요청 및 응답 처리
         response_content = handle_gpt_request(final_result)
 
+        # 투자 요약 데이터 저장
+        investment_summary_data = {
+            "start_date": datetime.now(),
+            "cumulative_profit_loss": 0.0,
+            "cumulative_profit_rate": 0.0,
+            "total_trades": 0,
+        }
+        create_investment_summary(db, investment_summary_data)
+
+        # GPT 로그 저장
+        gpt_log_data = {
+            "timestamp": datetime.now(),
+            "input_data": str(final_result),  # JSON 데이터를 문자열로 변환
+            "action": response_content.get("action", "N/A"),  # 'buy', 'sell', 'hold' 중 하나
+            "amount": response_content.get("amount", 0.0),   # 거래 금액
+            "reason": response_content.get("reason", "정보 없음"),  # GPT 응답에서 이유 가져오기
+        }
+        create_gpt_log(db, gpt_log_data)
+
+
         # 매매 결정
-        print("\n[Debug] GPT Response Content:", response_content)  # 디버깅용
         gpt_result = make_decision(response_content, portfolio_status)
-        print("\n[Debug] GPT Decision Result:", gpt_result)  # 디버깅용
 
         # 수익률 계산
         calc_result = calculate_profit_loss(portfolio_status, market_data["current_price"])
 
-
-        # 매매 실행
+        # 매매 실행 및 DB 저장
         if gpt_result[0] != "hold":
             trade_log = execute_trade_and_log(
                 gpt_result[0], gpt_result[1], market_data["current_price"], response_content
             )
             create_trade_log(db, trade_log)
-
-        # 포트폴리오 상태 갱신
-        portfolio_status = get_portfolio_status()
-        print("\n[Portfolio Status]:", portfolio_status)
+            
+            # 포트폴리오 상태 갱신 및 DB 업데이트
+            time.sleep(2)  # 거래 완료 후 데이터 동기화를 위해 지연
+            portfolio_status = get_portfolio_status()
+            process_and_save_portfolio(db,portfolio_status)
 
         # 누적 데이터 업데이트
         update_cumulative_summary(
@@ -225,6 +244,8 @@ def business_logic():
         print(f"\n[Error in Business Logic]: {e}")
     finally:
         db.close()
+
+
 # 스케줄러 실행
 def run_scheduler():
     schedule.every(30).minutes.do(business_logic)

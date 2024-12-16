@@ -25,7 +25,7 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
 
     # 포트폴리오 데이터 변환
     portfolio = [
-        {"currency": asset.currency, "balance": asset.balance, "avg_buy_price": asset.avg_buy_price}
+        {"currency": asset.currency, "balance": asset.balance, "total_investment": asset.total_investment, "cash_balance": asset.cash_balance}
         for asset in db.query(Portfolio).all()
     ]
 

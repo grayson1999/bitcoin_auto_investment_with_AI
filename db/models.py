@@ -28,14 +28,20 @@ class TradeLogs(Base):
     reason = Column(String, nullable=True)  # GPT에서 제공한 이유
     timestamp = Column(DateTime, nullable=False)
 
-# 포트폴리오 테이블
+from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+
+# Base = declarative_base()
+
 class Portfolio(Base):
     __tablename__ = "portfolios"
     id = Column(Integer, primary_key=True, index=True)
     currency = Column(String, nullable=False)  # 암호화폐 종류
-    balance = Column(Float, nullable=False, default=0.0)
-    avg_buy_price = Column(Float, nullable=False, default=0.0)
-    total_investment = Column(Float, nullable=False, default=0.0)
+    balance = Column(Float, nullable=False, default=0.0)  # 암호화폐 잔액
+    avg_buy_price = Column(Float, nullable=False, default=0.0)  # 평균 매수 가격
+    total_investment = Column(Float, nullable=False, default=0.0)  # 총 투자 금액
+    cash_balance = Column(Float, nullable=False, default=0.0)  # 현금 잔액
+
 
 # GPT 로그 테이블
 class GptLogs(Base):

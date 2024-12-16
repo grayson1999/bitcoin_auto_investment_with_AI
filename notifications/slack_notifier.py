@@ -61,7 +61,7 @@ class SlackNotifier:
                 f"🔄 **거래 액션**: {data.get('last_action', 'N/A')} "
                 f"({data.get('last_trade_amount', 'N/A')})\n"
                 f"💡 **거래 이유**: {data.get('last_trade_reason', '정보 없음')}\n\n"
-                f"🌐 **대시보드 확인:** [http://127.0.0.1:8000/api/dashboard](http://127.0.0.1:8000/api/dashboard)\n"
+                f"🌐 **대시보드 확인:** [http://122.38.210.80:8000/api/dashboard]\n"
             )
 
             return message
