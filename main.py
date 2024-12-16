@@ -227,7 +227,7 @@ def business_logic():
         db.close()
 # 스케줄러 실행
 def run_scheduler():
-    schedule.every(60).minutes.do(business_logic)
+    schedule.every(30).minutes.do(business_logic)
     business_logic()  # 첫 실행
     while True:
         schedule.run_pending()
