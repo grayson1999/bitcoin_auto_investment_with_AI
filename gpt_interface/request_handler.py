@@ -84,19 +84,6 @@ def send_request(request_data: Dict) -> Dict:
         raise ValueError(f"GPT 요청 처리 중 오류 발생: {e}")
 
 
-def validate_response(response: Dict) -> bool:
-    """
-    GPT 응답 데이터의 유효성을 검사합니다.
-    :param response: Dict - GPT 응답 데이터.
-    :return: bool - 유효하면 True, 아니면 False.
-    """
-    try:
-        if "choices" in response and len(response["choices"]) > 0:
-            return True
-        return False
-    except Exception as e:
-        raise ValueError(f"응답 유효성 검사 중 오류 발생: {e}")
-
 if __name__ == "__main__":
     import os
     from dotenv import load_dotenv

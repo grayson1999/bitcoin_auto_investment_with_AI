@@ -1,6 +1,3 @@
-import logging
-from typing import Dict, Union
-
 import json
 from typing import Dict
 
@@ -74,9 +71,6 @@ def format_input(data: Dict) -> str:
         raise ValueError(f"입력 데이터 포맷팅 중 오류 발생: {e}")
 
 
-
-
-
 def parse_response(response: str) -> Dict:
     """
     GPT 응답 데이터를 파싱하여 핵심 정보를 추출합니다.
@@ -93,15 +87,6 @@ def parse_response(response: str) -> Dict:
     except Exception as e:
         raise ValueError(f"응답 데이터 파싱 중 오류 발생: {e}")
 
-
-def handle_errors(error: Exception) -> str:
-    """
-    데이터 처리 및 응답 파싱 과정에서 발생하는 오류를 처리합니다.
-    :param error: Exception - 발생한 예외.
-    :return: str - 사용자 친화적인 에러 메시지.
-    """
-    logging.error(f"오류 발생: {error}")
-    return "An error occurred during data processing. Please try again later."
 
 
 if __name__ == "__main__":

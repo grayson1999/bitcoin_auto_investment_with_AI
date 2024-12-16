@@ -95,54 +95,6 @@ def make_decision(gpt_response: Dict, portfolio: Dict) -> Tuple[str, Optional[fl
         return "hold", 0  # 오류 발생 시 기본값 반환
 
 
-
-
-
-def evaluate_decision(previous_decisions: list, market_data: Dict) -> None:
-    """
-    이전 판단 결과를 기반으로 판단 로직의 성과를 평가합니다.
-    :param previous_decisions: list - 이전 판단 기록.
-    :param market_data: Dict - 시장 데이터 (현재 가격, 변동성 등).
-    :return: None
-    """
-    try:
-        # 간단한 평가: 이전 결정과 시장 데이터를 비교하여 수익 여부 분석
-        profit_count = sum(
-            1 for decision in previous_decisions if decision.get("profit") > 0
-        )
-        loss_count = len(previous_decisions) - profit_count
-
-        logging.info(
-            f"Evaluation - Profitable decisions: {profit_count}, Loss decisions: {loss_count}"
-        )
-
-    except Exception as e:
-        logging.error(f"Error in evaluate_decision: {e}")
-
-
-def calculate_performance(previous_transactions: list) -> float:
-    """
-    이전 거래 데이터를 기반으로 수익률을 계산합니다.
-    :param previous_transactions: list - 이전 거래 내역 (매수/매도 가격, 수량 포함).
-    :return: float - 총 수익률 (%).
-    """
-    try:
-        initial_balance = sum(
-            tx.get("initial_value", 0) for tx in previous_transactions
-        )
-        final_balance = sum(tx.get("final_value", 0) for tx in previous_transactions)
-
-        if initial_balance == 0:
-            raise ValueError("Initial balance cannot be zero for performance calculation.")
-
-        performance = ((final_balance - initial_balance) / initial_balance) * 100
-        logging.info(f"Total Performance: {performance:.2f}%")
-        return performance
-
-    except Exception as e:
-        logging.error(f"Error in calculate_performance: {e}")
-        return 0.0
-
 if __name__ == "__main__":
     # 로깅 설정
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
