@@ -2,53 +2,56 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
 
-# 투자 요약 테이블
-class InvestmentSummary(Base):
-    __tablename__ = "investment_summary"
-    id = Column(Integer, primary_key=True, index=True)
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=True)
-    total_investment = Column(Float, nullable=False, default=0.0)
-    total_profit_loss = Column(Float, nullable=False, default=0.0)
-    profit_rate = Column(Float, nullable=False, default=0.0)
-    total_trades = Column(Integer, nullable=False, default=0)
-    cumulative_profit_loss = Column(Float, nullable=False, default=0.0)  # 누적 수익 금액
-    cumulative_profit_rate = Column(Float, nullable=False, default=0.0)  # 누적 수익률
 
+class Trade(Base):
+    """
+    거래 내역을 저장하는 테이블
+    """
+    __tablename__ = "trades"
 
-# 거래 내역 테이블
-class TradeLogs(Base):
-    __tablename__ = "trade_logs"
-    id = Column(Integer, primary_key=True, index=True)
-    action = Column(String, nullable=False)  # 'buy', 'sell'
-    amount = Column(Float, nullable=False)  # 거래 금액
-    price = Column(Float, nullable=False)  # 거래 단가
+    id = Column(Integer, primary_key=True, index=True)  # Primary Key
+    timestamp = Column(DateTime, nullable=False)  # 거래 발생 시각
+    action = Column(String(10), nullable=False)  # 거래 유형 ('buy', 'sell', 'hold')
+    currency = Column(String(10), nullable=False)  # 거래 자산 (BTC, XRP 등)
+    amount = Column(Float, nullable=False)  # 거래 금액/수량
+    price = Column(Float, nullable=False)  # 거래 당시 자산 가격
     total_value = Column(Float, nullable=False)  # 거래 총 금액
-    currency = Column(String, nullable=False)  # 암호화폐 종류
-    reason = Column(String, nullable=True)  # GPT에서 제공한 이유
-    timestamp = Column(DateTime, nullable=False)
+    reason = Column(String, nullable=True)  # GPT 판단 근거
 
-from sqlalchemy import Column, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
+    def __repr__(self):
+        return f"<Trade(id={self.id}, action={self.action}, currency={self.currency}, amount={self.amount})>"
 
-# Base = declarative_base()
+
+class Performance(Base):
+    """
+    수익률 및 누적 수익률을 저장하는 테이블
+    """
+    __tablename__ = "performance"
+
+    id = Column(Integer, primary_key=True, index=True)  # Primary Key
+    timestamp = Column(DateTime, nullable=False)  # 기록 시각
+    profit = Column(Float, nullable=False)  # 특정 거래의 수익금
+    profit_rate = Column(Float, nullable=False)  # 특정 거래의 수익률 (%)
+    cumulative_profit = Column(Float, nullable=False)  # 누적 수익금
+    cumulative_profit_rate = Column(Float, nullable=False)  # 누적 수익률 (%)
+
+    def __repr__(self):
+        return f"<Performance(id={self.id}, profit={self.profit}, profit_rate={self.profit_rate})>"
+
 
 class Portfolio(Base):
-    __tablename__ = "portfolios"
-    id = Column(Integer, primary_key=True, index=True)
-    currency = Column(String, nullable=False)  # 암호화폐 종류
-    balance = Column(Float, nullable=False, default=0.0)  # 암호화폐 잔액
-    avg_buy_price = Column(Float, nullable=False, default=0.0)  # 평균 매수 가격
-    total_investment = Column(Float, nullable=False, default=0.0)  # 총 투자 금액
-    cash_balance = Column(Float, nullable=False, default=0.0)  # 현금 잔액
+    """
+    현재 포트폴리오 상태를 저장하는 테이블
+    """
+    __tablename__ = "portfolio"
 
+    id = Column(Integer, primary_key=True, index=True)  # Primary Key
+    timestamp = Column(DateTime, nullable=False)  # 기록 시각
+    cash_balance = Column(Float, nullable=False)  # 현금 잔액
+    total_investment = Column(Float, nullable=False)  # 총 투자 금액
+    currency = Column(String(10), nullable=False)  # 투자 대상 자산
+    target_asset_balance = Column(Float, nullable=False)  # 현재 자산 보유 수량
+    avg_buy_price = Column(Float, nullable=False)  # 평균 매수 가격
 
-# GPT 로그 테이블
-class GptLogs(Base):
-    __tablename__ = "gpt_logs"
-    id = Column(Integer, primary_key=True, index=True)
-    input_data = Column(String, nullable=False)
-    action = Column(String, nullable=False)  # 'buy', 'sell', 'hold'
-    amount = Column(Float, nullable=False)
-    reason = Column(String, nullable=True)  # GPT 제공 이유
-    timestamp = Column(DateTime, nullable=False)
+    def __repr__(self):
+        return f"<Portfolio(id={self.id}, currency={self.currency}, cash_balance={self.cash_balance})>"

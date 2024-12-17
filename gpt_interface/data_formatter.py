@@ -22,7 +22,7 @@ def format_input(data: Dict) -> str:
             formatted_data += (
                 f"  Target Asset:\n"
                 f"    - Currency: {asset['currency']}\n"
-                f"    - Balance: {asset['balance']} BTC\n"
+                f"    - Balance: {asset['balance']}\n"
                 f"    - Avg Buy Price: {asset['avg_buy_price']} KRW\n"
             )
         else:
@@ -32,7 +32,7 @@ def format_input(data: Dict) -> str:
         formatted_data += (
             f"\nMarket Data:\n"
             f"- Current Price: {data['market_data']['current_price']} KRW\n"
-            f"- 24h Volume: {data['market_data']['volume_24h']} BTC\n"
+            f"- 24h Volume: {data['market_data']['volume_24h']}\n"
             f"\n30-Day Summary:\n"
         )
         for segment, segment_data in data["market_data"]["summary_30d"].items():
@@ -45,25 +45,25 @@ def format_input(data: Dict) -> str:
                 f"    - Volatility: {segment_data['volatility']}\n"
             )
 
-        # 5분 봉 요약 포맷팅
-        formatted_data += "\n5-Minute Summary:\n"
-        for hour, hour_data in data["market_data"]["processed_5min"].items():
-            if hour == "overall":
+        # 15분 요약 데이터 정보 추가
+        formatted_data += "\n15-Minute Summary (aggregated from 5-minute data):\n"
+        for segment, segment_data in data["market_data"]["processed_5min"].items():
+            if segment == "overall":
                 formatted_data += (
                     f"  Overall:\n"
-                    f"    - Trend: {hour_data['trend']}\n"
-                    f"    - Max Volatility: {hour_data['max_volatility']}\n"
-                    f"    - Outlier Count: {hour_data['outlier_count']}\n"
+                    f"    - Trend: {segment_data['trend']}\n"
+                    f"    - Max Volatility: {segment_data['max_volatility']}\n"
+                    f"    - Outlier Count: {segment_data['outlier_count']}\n"
                 )
             else:
                 formatted_data += (
-                    f"  {hour}:\n"
-                    f"    - Avg Price: {hour_data['avg_price']} KRW\n"
-                    f"    - High: {hour_data['high_price']} KRW\n"
-                    f"    - Low: {hour_data['low_price']} KRW\n"
-                    f"    - Volatility: {hour_data['volatility']}\n"
-                    f"    - VWAP: {hour_data['vwap']} KRW\n"
-                    f"    - Total Volume: {hour_data['total_vol']} BTC\n"
+                    f"  {segment}:\n"
+                    f"    - Avg Price: {segment_data['avg_price']} KRW\n"
+                    f"    - High: {segment_data['high_price']} KRW\n"
+                    f"    - Low: {segment_data['low_price']} KRW\n"
+                    f"    - Volatility: {segment_data['volatility']}\n"
+                    f"    - VWAP: {segment_data['vwap']} KRW\n"
+                    f"    - Total Volume: {segment_data['total_vol']}\n"
                 )
 
         return formatted_data.strip()

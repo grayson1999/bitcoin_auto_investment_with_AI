@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+import logging
 
 # 현재 파일의 디렉토리를 기준으로 .env 파일 경로 설정
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,32 +44,28 @@ class SlackNotifier:
         """
         try:
             message = (
-                f"🔔 **[비트코인 투자 알림]**\n\n"
+                f"🔔 **[투자 알림]**\n\n"
                 f"📋 **실행 요약**\n"
-                f"➡️ **이번 행위**: {data.get('executed_action', 'N/A')}\n"
-                f"💡 **행위 이유**: {data.get('executed_reason', '정보 없음')}\n\n"
+                f"➡️ **실행 액션**: {data.get('executed_action', 'N/A')}\n"
+                f"💡 **실행 이유**: {data.get('executed_reason', '정보 없음')}\n"
+                f"💸 **실행 금액**: {data.get('executed_amount', 'N/A')}\n"
+                f"💰 **총 거래 금액**: {data.get('total_value', 'N/A')}\n\n"
                 f"📊 **수익 요약**\n"
+                f"📈 **이번 수익률**: {data.get('profit_rate', 'N/A')}\n"
                 f"💵 **이번 수익 금액**: {data.get('profit_amount', 'N/A')}\n"
-                f"📈 **이번 수익률**: {data.get('profit_rate', 'N/A')}%\n"
                 f"💰 **누적 수익 금액**: {data.get('cumulative_profit_amount', 'N/A')}\n"
-                f"📉 **누적 수익률**: {data.get('cumulative_profit_rate', 'N/A')}%\n\n"
+                f"📉 **누적 수익률**: {data.get('cumulative_profit_rate', 'N/A')}\n\n"
                 f"💼 **포트폴리오 현황**\n"
-                f"🪙 **보유 자산 (BTC)**: {data.get('balance', 'N/A')}\n"
-                f"💵 **원화 잔고**: {data.get('cash_balance', 'N/A')}\n"
+                f"🪙 **보유 자산**: {data.get('balance', 'N/A')}\n"
+                f"💵 **현금 잔고**: {data.get('cash_balance', 'N/A')}\n"
                 f"💳 **총 투자 금액**: {data.get('investment', 'N/A')}\n\n"
-                f"📋 **거래 내역**\n"
-                f"📅 **마지막 거래 시간**: {data.get('last_trade_time', 'N/A')}\n"
-                f"🔄 **거래 액션**: {data.get('last_action', 'N/A')} "
-                f"({data.get('last_trade_amount', 'N/A')})\n"
-                f"💡 **거래 이유**: {data.get('last_trade_reason', '정보 없음')}\n\n"
                 f"🌐 **대시보드 확인:** [http://122.38.210.80:8000/api/dashboard]\n"
             )
 
             return message
         except Exception as e:
-            print(f"Slack 메시지 포맷팅 중 오류 발생: {e}")
+            logging.error(f"Slack 메시지 포맷팅 중 오류 발생: {e}")
             return "메시지 포맷팅 오류 발생"
-
 
 
     def send_message(self, channel: str, text: str) -> bool:
@@ -91,20 +88,3 @@ class SlackNotifier:
             print(f"Slack 메시지 전송 중 오류 발생: {e}")
             return False
 
-
-# 모듈 테스트
-if __name__ == "__main__":
-    notifier = SlackNotifier()
-
-    # 1. 연결 상태 확인
-    if notifier.check_connection():
-        # 2. 메시지 포맷 설정
-        test_data = {
-            "event": "비트코인 거래",
-            "message": "비트코인이 목표가에 도달했습니다.",
-            "timestamp": "2024-12-15 14:00:00",
-        }
-        formatted_message = notifier.format_message(test_data)
-
-        # 3. 메시지 전송
-        notifier.send_message("#autobitcoin", formatted_message)

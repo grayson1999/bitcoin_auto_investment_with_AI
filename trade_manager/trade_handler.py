@@ -63,14 +63,3 @@ def log_transaction(action: str, result: dict) -> None:
     except Exception as e:
         logging.error(f"Error while logging transaction: {e}")
         
-if __name__ == "__main__":
-    # 테스트 데이터
-    test_action = "buy"
-    test_amount = 10000  # 매수 금액 (KRW)
-    test_market = "KRW-BTC"  # 비트코인 원화 시장
-
-    # 매매 실행
-    trade_result = execute_trade(test_action, test_amount, test_market)
-
-    # 거래 결과 로깅
-    log_transaction(test_action, trade_result)
