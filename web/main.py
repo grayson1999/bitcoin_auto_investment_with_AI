@@ -19,7 +19,5 @@ app.include_router(dashboard.router, prefix="/api")
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    return HTMLResponse('<meta http-equiv="refresh" content="0; url=/api/dashboard" />')
+    return HTMLResponse('<meta http-equiv="refresh" content="0; url=/api/index" />')
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)  # reload=False로 디버그 모드 비활성화

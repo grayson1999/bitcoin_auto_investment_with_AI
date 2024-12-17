@@ -180,11 +180,12 @@ def business_logic():
                 trade_log = execute_trade_and_log(
                     gpt_result[0], gpt_result[1], market_data["current_price"], response_content, MARKET_NAME
                 )
-                create_trade(db, trade_log)
                 logging.info(f"매매 로그 저장 성공: {trade_log}")
             except Exception as e:
                 logging.error(f"매매 로그 저장 중 오류 발생: {e}")
-
+                
+        create_trade(db, trade_log)
+        if gpt_result[0] != "hold":
             # 포트폴리오 상태 업데이트
             try:
                 portfolio_status = get_portfolio_status(MARKET_NAME)

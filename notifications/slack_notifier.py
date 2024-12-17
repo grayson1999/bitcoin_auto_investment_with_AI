@@ -59,7 +59,7 @@ class SlackNotifier:
                 f"🪙 **보유 자산**: {data.get('balance', 'N/A')}\n"
                 f"💵 **현금 잔고**: {data.get('cash_balance', 'N/A')}\n"
                 f"💳 **총 투자 금액**: {data.get('investment', 'N/A')}\n\n"
-                f"🌐 **대시보드 확인:** [http://122.38.210.80:8000/api/dashboard]\n"
+                f"🌐 **대시보드 확인:** [http://122.38.210.80:8000/api/index]\n"
             )
 
             return message

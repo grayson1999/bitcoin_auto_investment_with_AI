@@ -1,133 +1,232 @@
-
-// 성과 그래프 데이터 로드 및 렌더링
-async function loadPerformanceGraph() {
-    try {
-        const response = await fetch("/api/performance-graph");
-        if (!response.ok) throw new Error("그래프 API 호출 실패");
-
-        const data = await response.json();
-
-        if (!data.cumulative_profit_rate || !data.daily_profit_loss) {
-            throw new Error("그래프 데이터가 올바르지 않습니다.");
-        }
-
-        // 누적 수익률 데이터
-        const cumulativeLabels = data.cumulative_profit_rate.map((item) => item.date);
-        const cumulativeData = data.cumulative_profit_rate.map((item) => item.rate);
-
-        // 일간 손익 데이터
-        const dailyLabels = data.daily_profit_loss.map((item) => item.date);
-        const dailyData = data.daily_profit_loss.map((item) => item.loss);
-
-        // 누적 수익률 그래프 렌더링
-        new Chart(document.getElementById("cumulativeProfitChart"), {
-            type: "line",
-            data: {
-                labels: cumulativeLabels,
-                datasets: [
-                    {
-                        label: "누적 수익률 (%)",
-                        data: cumulativeData,
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        backgroundColor: "rgba(75, 192, 192, 0.2)",
-                        fill: true,
-                        tension: 0.4,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: "top" },
-                    tooltip: {
-                        callbacks: { label: (context) => `${context.raw.toFixed(2)}%` },
-                    },
-                },
-            },
-        });
-
-        // 일간 손익 그래프 렌더링
-        new Chart(document.getElementById("dailyProfitChart"), {
-            type: "bar",
-            data: {
-                labels: dailyLabels,
-                datasets: [
-                    {
-                        label: "일간 손익 (KRW)",
-                        data: dailyData,
-                        backgroundColor: dailyData.map((val) =>
-                            val >= 0 ? "rgba(54, 162, 235, 0.5)" : "rgba(255, 99, 132, 0.5)"
-                        ),
-                        borderColor: dailyData.map((val) =>
-                            val >= 0 ? "rgba(54, 162, 235, 1)" : "rgba(255, 99, 132, 1)"
-                        ),
-                        borderWidth: 1,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: "top" },
-                    tooltip: {
-                        callbacks: { label: (context) => `${context.raw.toLocaleString()} KRW` },
-                    },
-                },
-                scales: {
-                    y: { beginAtZero: true },
-                },
-            },
-        });
-    } catch (error) {
-        console.error("그래프 로드 실패:", error);
-        alert("그래프 데이터를 불러오지 못했습니다. 다시 시도해주세요.");
-    }
+// 숫자를 3자리마다 콤마로 포맷팅
+function formatNumber(value) {
+    return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// 성과 그래프 로드
-loadPerformanceGraph();
+// 최근 거래 기록 데이터를 렌더링
+function renderRecentTrades(recentTrades) {
+    const recentTradesTable = document.getElementById("recentTradesTable");
+
+    if (!recentTrades || recentTrades.length === 0) {
+        recentTradesTable.innerHTML = `<tr><td colspan="4" class="text-center">최근 거래 기록이 없습니다.</td></tr>`;
+        return;
+    }
+
+    // 'hold'가 아닌 최근 4개의 거래 필터링
+    const filteredTrades = recentTrades
+        .filter(trade => trade.action !== "hold")
+        .slice(0, 4); // 최근 4개만 선택
+
+    if (filteredTrades.length === 0) {
+        recentTradesTable.innerHTML = `<tr><td colspan="4" class="text-center">유효한 거래 기록이 없습니다.</td></tr>`;
+        return;
+    }
+
+    // 거래 데이터를 테이블에 추가
+    recentTradesTable.innerHTML = filteredTrades
+        .map(trade => `
+            <tr>
+                <td>${trade.timestamp}</td>
+                <td>${trade.action}</td>
+                <td>${trade.amount.toFixed(8)} ${trade.currency}</td>
+                <td>${trade.reason}</td>
+            </tr>
+        `)
+        .join("");
+}
 
 
-// 거래 기록 데이터 로드 및 페이징
+// 현재 성과 데이터를 렌더링
+function renderPerformanceData(performance) {
+    const currentProfitRate = document.getElementById("currentProfitRate");
+    const currentProfitLoss = document.getElementById("currentProfitLoss");
+    const cumulativeProfitRate = document.getElementById("cumulativeProfitRate");
+    const cumulativeProfitLoss = document.getElementById("cumulativeProfitLoss");
+
+    // 데이터 존재 여부 확인 후 렌더링
+    currentProfitRate.innerText = performance?.current_profit_rate !== undefined
+        ? `${formatNumber(performance.current_profit_rate)}`
+        : "데이터 없음";
+    currentProfitLoss.innerText = performance?.current_profit_loss !== undefined
+        ? `${formatNumber(performance.current_profit_loss)}`
+        : "데이터 없음";
+    cumulativeProfitRate.innerText = performance?.cumulative_profit_rate !== undefined
+        ? `${formatNumber(performance.cumulative_profit_rate)}`
+        : "데이터 없음";
+    cumulativeProfitLoss.innerText = performance?.cumulative_profit_loss !== undefined
+        ? `${formatNumber(performance.cumulative_profit_loss)}`
+        : "데이터 없음";
+}
+
+// 포트폴리오 데이터를 렌더링
+function renderPortfolioData(portfolio) {
+    const totalInvestment = document.getElementById("totalInvestment");
+    const portfolioList = document.getElementById("portfolioList");
+
+    if (!portfolio) {
+        totalInvestment.innerText = "데이터 없음";
+        portfolioList.innerHTML = "<li>데이터가 없습니다.</li>";
+        return;
+    }
+
+    // 총 투자 금액 렌더링
+    totalInvestment.innerText = portfolio.total_investment
+        ? formatNumber(portfolio.total_investment)
+        : "데이터 없음";
+
+    // 포트폴리오 데이터 렌더링
+    portfolioList.innerHTML = `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <strong>KRW</strong>
+            <span>보유량: ${portfolio.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <strong>${portfolio.currency}</strong>
+            <span>보유량: ${portfolio.balance.toFixed(8)}</span>
+        </li>
+    `;
+}
+
+
+// 성과 그래프 렌더링
+function loadPerformanceGraphs(graphData) {
+    if (!graphData || !graphData.cumulative_profit || !graphData.daily_profit) {
+        console.error("그래프 데이터가 유효하지 않습니다.");
+        return;
+    }
+
+    // 누적 수익 그래프 데이터 준비
+    const cumulativeLabels = graphData.cumulative_profit.map(item => item.date);
+    const cumulativeData = graphData.cumulative_profit.map(item => item.value);
+
+    // 누적 수익 그래프
+    new Chart(document.getElementById("cumulativeProfitChart"), {
+        type: "line",
+        data: {
+            labels: cumulativeLabels,
+            datasets: [{
+                label: "누적 수익",
+                data: cumulativeData,
+                borderColor: "#B2E4A8", // 파스텔 초록색
+                backgroundColor: "rgba(178, 228, 168, 0.3)", // 투명한 파스텔 초록색
+                borderWidth: 2, // 선 굵기
+                fill: true, // 아래쪽 색상 채우기
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: context => `${context.raw.toLocaleString()} KRW` } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    ticks: { callback: value => `${value.toLocaleString()} KRW` },
+                    beginAtZero: true, // Y축 0 기준
+                }
+            }
+        }
+    });
+
+    // 일간 수익 그래프 데이터 준비
+    const dailyLabels = graphData.daily_profit.map(item => item.date);
+    const dailyData = graphData.daily_profit.map(item => item.value);
+
+    // 일간 수익 그래프
+    new Chart(document.getElementById("dailyProfitChart"), {
+        type: "bar",
+        data: {
+            labels: dailyLabels,
+            datasets: [{
+                label: "일간 수익",
+                data: dailyData,
+                backgroundColor: dailyData.map(value => value >= 0 ? "rgba(160, 211, 232, 0.8)" : "rgba(242, 182, 210, 0.8)"), // 양수: 파스텔 파랑, 음수: 파스텔 분홍
+                borderColor: dailyData.map(value => value >= 0 ? "#A0D3E8" : "#F2B6D2"), // 동일 계열 테두리
+                borderWidth: 1, // 얇은 테두리
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: context => `${context.raw.toLocaleString()} KRW` } }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    ticks: { callback: value => `${value.toLocaleString()} KRW` },
+                    beginAtZero: true, // Y축 0 기준
+                    suggestedMin: Math.min(...dailyData, 0) - 10, // 최소값 설정
+                    suggestedMax: Math.max(...dailyData, 0) + 10, // 최대값 설정
+                }
+            }
+        }
+    });
+}
+
+
+
+
+// 전체 거래 데이터 페이징
+let currentPage = 1;
 async function loadTradeLogs(page) {
     try {
-        const response = await fetch(`/api/trade-logs?page=${page}&per_page=5`);
-        if (!response.ok) throw new Error("거래 기록 API 호출 실패");
+        const response = await fetch(`/api/trades?page=${page}&per_page=5`);
+        if (!response.ok) throw new Error('Failed to load trade logs');
 
         const data = await response.json();
-        const tableBody = document.querySelector("#tradeLogsTable");
-        tableBody.innerHTML = ""; // 기존 데이터를 초기화
 
-        data.trade_logs.forEach(log => {
-            const currency = log.amount > 1 ? "KRW" : "BTC"; // 통화 결정
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                    <td>${log.timestamp}</td>
-                    <td>${log.action}</td>
-                    <td>${log.amount.toLocaleString()} ${currency}</td>
-                    <td class="reason-cell">${log.reason || "N/A"}</td>
-                `;
-            tableBody.appendChild(row);
-        });
+        const allTradesTable = document.getElementById('allTradesTable');
+        allTradesTable.innerHTML = data.trade_logs.map(trade => `
+            <tr>
+                <td>${trade.timestamp}</td>
+                <td>${trade.action}</td>
+                <td>${trade.amount.toFixed(8)} ${trade.currency}</td>
+                <td>${trade.reason}</td>
+            </tr>
+        `).join("");
 
-        // 페이지 네비게이션 업데이트
+        // 페이지 네비게이션
         currentPage = data.page;
-        document.querySelector("#currentPage").innerText = `페이지: ${currentPage}`;
-        document.querySelector("#prevPage").disabled = currentPage <= 1;
-        document.querySelector("#nextPage").disabled = (currentPage * 5) >= data.total_records;
+        document.getElementById('currentPage').innerText = `페이지: ${currentPage}`;
+        document.getElementById('prevPage').disabled = currentPage <= 1;
+        document.getElementById('nextPage').disabled = currentPage * 5 >= data.total_records;
     } catch (error) {
-        console.error("거래 기록 로드 실패:", error);
-        alert("거래 기록 데이터를 불러오지 못했습니다. 다시 시도해주세요.");
+        console.error('Error loading trade logs:', error);
     }
 }
 
-// 초기 데이터 로드
-loadTradeLogs(1);
+// 초기 데이터 로드 및 이벤트 리스너 설정
+async function loadDashboardData() {
+    try {
+        const response = await fetch('/api/dashboard');
+        if (!response.ok) throw new Error('Failed to load dashboard data');
 
-// 페이지 버튼 이벤트
-document.querySelector("#prevPage").addEventListener("click", () => {
-    if (currentPage > 1) loadTradeLogs(currentPage - 1);
-});
-document.querySelector("#nextPage").addEventListener("click", () => {
-    loadTradeLogs(currentPage + 1);
+        const data = await response.json();
+        console.log('Dashboard Data:', data); // Debugging 용 로그
+
+        // 성과, 포트폴리오 및 그래프 데이터 렌더링
+        renderPerformanceData(data.performance);
+        renderPortfolioData(data.portfolio);
+        loadPerformanceGraphs(data.graphs);
+
+        // 최근 거래 기록 렌더링
+        renderRecentTrades(data.recent_trades);
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("prevPage").addEventListener("click", () => {
+        if (currentPage > 1) loadTradeLogs(currentPage - 1);
+    });
+
+    document.getElementById("nextPage").addEventListener("click", () => {
+        loadTradeLogs(currentPage + 1);
+    });
+
+    loadDashboardData();
+    loadTradeLogs(1);
 });
