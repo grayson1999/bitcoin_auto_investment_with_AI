@@ -126,7 +126,7 @@ def execute_trade_and_log(action, amount, current_price, response_content, marke
     return trade_log
 
 # Slack 알림 생성 및 전송
-def send_slack_notification(db, trade_log, portfolio_status, market_name="KRW-BTC"):
+def send_slack_notification(db, trade_log, portfolio_status,performance_data, market_name="KRW-BTC"):
     notifier = SlackNotifier()
     currency = market_name.split("-")[1]
     cumulative_summary = calculate_cumulative_profit_and_rate(db)
@@ -143,8 +143,10 @@ def send_slack_notification(db, trade_log, portfolio_status, market_name="KRW-BT
         "balance": f"{portfolio_status.get('target_asset', {}).get('balance', 0.0):.8f} {currency}",
         "cash_balance": f"{portfolio_status.get('cash_balance', 0.0):,.2f} KRW",
         "investment": f"{portfolio_status.get('target_asset', {}).get('total_investment', 0.0):,.2f} KRW",
-        "cumulative_profit_amount": f"{cumulative_summary.get('cumulative_profit_loss', 0.0):,.2f} KRW",
-        "cumulative_profit_rate": f"{cumulative_summary.get('cumulative_profit_rate', 0.0):.2f}%",
+        "profit_amount": f"{performance_data.get('profit', 0.0):,.2f} KRW",
+        "profit_rate": f"{performance_data.get('profit_rate', 0.0):.2f}%",
+        "cumulative_profit_amount": f"{performance_data.get('cumulative_profit', 0.0):,.2f} KRW",
+        "cumulative_profit_rate": f"{performance_data.get('cumulative_profit_rate', 0.0):.2f}%",
     }
 
     if notifier.check_connection():
@@ -158,6 +160,7 @@ def send_slack_notification(db, trade_log, portfolio_status, market_name="KRW-BT
 def business_logic():
     db = SessionLocal()
     MARKET_NAME = "KRW-XRP"
+    trade_log = None  # trade_log 초기화
     try:
         logging.info("비즈니스 로직 시작")
 
@@ -171,8 +174,10 @@ def business_logic():
             "market_data": market_data,
         }
 
-        response_content = handle_gpt_request(final_result,MARKET_NAME)
-        gpt_result = make_decision(response_content, portfolio_status,final_result["market_data"]["current_price"],MARKET_NAME)
+        response_content = handle_gpt_request(final_result, MARKET_NAME)
+        gpt_result = make_decision(
+            response_content, portfolio_status, final_result["market_data"]["current_price"], MARKET_NAME
+        )
 
         if gpt_result[0] != "hold":
             # 매매 로그 생성 및 저장
@@ -180,11 +185,13 @@ def business_logic():
                 trade_log = execute_trade_and_log(
                     gpt_result[0], gpt_result[1], market_data["current_price"], response_content, MARKET_NAME
                 )
+                create_trade(db, trade_log)
                 logging.info(f"매매 로그 저장 성공: {trade_log}")
             except Exception as e:
                 logging.error(f"매매 로그 저장 중 오류 발생: {e}")
-                
-        create_trade(db, trade_log)
+
+        
+
         if gpt_result[0] != "hold":
             # 포트폴리오 상태 업데이트
             try:
@@ -204,29 +211,24 @@ def business_logic():
 
             # 수익률 및 누적 수익률 계산
             try:
-                # 현재 투자 상태
                 current_price = market_data["current_price"]
                 target_asset = portfolio_status.get("target_asset", {})
                 target_balance = target_asset.get("balance", 0)
                 avg_buy_price = target_asset.get("avg_buy_price", 0)
 
-                # 투자 가치 및 수익 계산
                 invested_value = target_balance * avg_buy_price
                 current_value = target_balance * current_price
                 profit_loss = current_value - invested_value
                 profit_rate = (profit_loss / invested_value * 100) if invested_value > 0 else 0.0
 
-                # DB에서 기존 누적 데이터 가져오기
                 cumulative_summary = calculate_cumulative_profit_and_rate(db)
                 cumulative_profit = cumulative_summary.get("cumulative_profit_loss", 0.0)
                 cumulative_profit_rate = cumulative_summary.get("cumulative_profit_rate", 0.0)
                 total_investment = portfolio_status.get("total_investment", 0)
 
-                # 새로운 누적 데이터 계산
                 cumulative_profit += profit_loss
                 cumulative_profit_rate = (cumulative_profit / total_investment * 100) if total_investment > 0 else 0.0
 
-                # performance 데이터 구성
                 performance_data = {
                     "timestamp": current_time,
                     "profit": profit_loss,
@@ -235,21 +237,21 @@ def business_logic():
                     "cumulative_profit_rate": cumulative_profit_rate,
                 }
 
-                # performance 테이블에 저장
                 create_performance(db, performance_data)
                 logging.info(f"수익률 데이터 저장 성공: {performance_data}")
             except Exception as e:
                 logging.error(f"수익률 데이터 저장 중 오류 발생: {e}")
-        
+
         # Slack 알림 전송
-        if gpt_result[0] != "hold":
+        if trade_log and gpt_result[0] != "hold":
             send_slack_notification(
                 db=db,
                 trade_log=trade_log,
                 portfolio_status=portfolio_status,
+                performance_data = performance_data,
                 market_name=MARKET_NAME
             )
-            logging.info("slack 전송 완료")
+            logging.info("Slack 전송 완료")
 
         logging.info("비즈니스 로직 완료")
 

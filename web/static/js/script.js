@@ -3,38 +3,31 @@ function formatNumber(value) {
     return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// 최근 거래 기록 데이터를 렌더링
+// 최근 거래 기록 렌더링
 function renderRecentTrades(recentTrades) {
-    const recentTradesTable = document.getElementById("recentTradesTable");
+    const recentTradesTable = document.getElementById('recentTradesTable');
 
     if (!recentTrades || recentTrades.length === 0) {
-        recentTradesTable.innerHTML = `<tr><td colspan="4" class="text-center">최근 거래 기록이 없습니다.</td></tr>`;
+        recentTradesTable.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center">최근 거래 기록이 없습니다.</td>
+            </tr>
+        `;
         return;
     }
 
-    // 'hold'가 아닌 최근 4개의 거래 필터링
-    const filteredTrades = recentTrades
-        .filter(trade => trade.action !== "hold")
-        .slice(0, 4); // 최근 4개만 선택
-
-    if (filteredTrades.length === 0) {
-        recentTradesTable.innerHTML = `<tr><td colspan="4" class="text-center">유효한 거래 기록이 없습니다.</td></tr>`;
-        return;
-    }
-
-    // 거래 데이터를 테이블에 추가
-    recentTradesTable.innerHTML = filteredTrades
+    recentTradesTable.innerHTML = recentTrades
+        .filter(trade => trade.action !== 'hold') // 'hold' 제외
+        .slice(0, 4) // 최근 4개만
         .map(trade => `
             <tr>
-                <td>${trade.timestamp}</td>
-                <td>${trade.action}</td>
-                <td>${trade.amount.toFixed(8)} ${trade.currency}</td>
-                <td>${trade.reason}</td>
+                <td data-label="거래 시점">${new Date(trade.timestamp).toLocaleString()}</td>
+                <td data-label="유형">${trade.action}</td>
+                <td data-label="거래 금액">${trade.amount.toFixed(8)} ${trade.currency}</td>
+                <td data-label="거래 이유">${trade.reason}</td>
             </tr>
-        `)
-        .join("");
+        `).join('');
 }
-
 
 // 현재 성과 데이터를 렌더링
 function renderPerformanceData(performance) {
@@ -178,14 +171,22 @@ async function loadTradeLogs(page) {
         const data = await response.json();
 
         const allTradesTable = document.getElementById('allTradesTable');
+        if (!data.trade_logs || data.trade_logs.length === 0) {
+            allTradesTable.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">거래 기록이 없습니다.</td>
+                </tr>`;
+            return;
+        }
+
         allTradesTable.innerHTML = data.trade_logs.map(trade => `
             <tr>
-                <td>${trade.timestamp}</td>
+                <td>${new Date(trade.timestamp).toLocaleString()}</td>
                 <td>${trade.action}</td>
                 <td>${trade.amount.toFixed(8)} ${trade.currency}</td>
                 <td>${trade.reason}</td>
             </tr>
-        `).join("");
+        `).join('');
 
         // 페이지 네비게이션
         currentPage = data.page;

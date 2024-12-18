@@ -5,13 +5,17 @@ from sqlalchemy.orm import Session
 from db.database import SessionLocal
 from db.models import Trade, Performance, Portfolio
 from datetime import datetime, timedelta
-
+from fastapi.staticfiles import StaticFiles
 
 # FastAPI 앱 초기화
 app = FastAPI()
 
 # Jinja2 템플릿 설정
 templates = Jinja2Templates(directory="web/templates")
+
+
+
+app.mount("/static", StaticFiles(directory="web/static"), name="static")
 
 # APIRouter 객체 생성
 router = APIRouter()
