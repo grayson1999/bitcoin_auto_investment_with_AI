@@ -24,23 +24,24 @@ def prepare_request(data: Dict) -> Dict:
                     "Key Points:\n"
                     "1. The user prefers a slightly aggressive strategy.\n"
                     "2. Trades occur every 15 minutes and must optimize for short-term outcomes.\n"
-                    "3. Purchases below 5000 KRW are prohibited. Explicitly state when buying is not possible due to low cash balance.\n"
+                    "3. Trades (both buy and sell) below 5000 KRW are prohibited. Explicitly state when trading is not possible due to constraints.\n"
                     "4. A 0.05% trading fee applies. Recommendations must account for fees.\n"
                     "5. Maximize profit or minimize loss by analyzing:\n"
                     "   - Market trends (rising, falling, stable)\n"
                     "   - Portfolio status (cash balance, holdings, recent trades)\n"
                     "6. Ensure trades stay within available balances and comply with Upbit policies.\n"
                     "7. Provide reasons tailored to market conditions and user constraints.\n"
-                    "8. If the action cannot be executed due to market constraints (e.g., minimum amount requirements), return 'hold' as the action.\n\n"
+                    "8. If the action cannot be executed due to market constraints (e.g., minimum amount requirements for both buying and selling), return 'hold' as the action.\n"
+                    "9. Prioritize 'hold' over invalid trades when constraints are not met.\n\n"
                     "Output Format:\n"
                     "{\n"
                     "    \"action\": \"buy\" | \"sell\" | \"hold\",\n"
                     "    \"amount\": \"specific amount\",\n"
-                    "    \"reason\": \"Brief explanation(1 sentence)\"\n"
+                    "    \"reason\": \"Brief explanation (1 sentence)\"\n"
                     "}\n"
-                    "If buying is not allowed, prioritize 'sell' or 'hold' based on the market and portfolio.\n"
+                    "If trading cannot be executed due to market or portfolio constraints, clearly state 'hold' as the action and provide the reason in the specified format.\n"
                     "Respond strictly in JSON format without extra text."
-                ),
+                )
             },
             {
                 "role": "user",
